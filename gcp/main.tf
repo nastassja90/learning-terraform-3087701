@@ -18,7 +18,7 @@ resource "google_compute_instance" "web" {
   # Define the storage (boot disk) configuration
   boot_disk {
     initialize_params {
-      image = data.google_compute_image.app_image.self_link
+      image = data.google_compute_image.bitnami_tomcat.self_link
     }
   }
 
