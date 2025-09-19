@@ -1,11 +1,9 @@
+# GCP does not use filters to search for images, but you can either use the image name or the image family.
+# The image family is a way to group images, and when you use it, GCP will always return the latest non-deprecated image in that family.
+# In this case, we are using the "tomcat" family from the "bitnami-launchpad" project, which will always return the latest Tomcat image available.
+# This is equivalent to using filters in AWS to always get the latest version of an AMI.
 data "google_compute_image" "app_image" {
-  most_recent = true
-  
-  filter {
-    name   = "name"
-    values = ["bitnami-tomcat-*"]
-  }
-  
+  family  = "tomcat"
   project = "bitnami-launchpad"
 }
 
