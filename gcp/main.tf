@@ -2,8 +2,8 @@
 # The image family is a way to group images, and when you use it, GCP will always return the latest non-deprecated image in that family.
 # In this case, we are using the "tomcat" family from the "bitnami-launchpad" project, which will always return the latest Tomcat image available.
 # This is equivalent to using filters in AWS to always get the latest version of an AMI.
-data "google_compute_image" "app_image" {
-  family  = "bitnami-tomcat"
+data "google_compute_image" "bitnami_tomcat" {
+  family  = "tomcat"
   project = "bitnami-launchpad"
 }
 
