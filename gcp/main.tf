@@ -1,3 +1,8 @@
+# Output available zones in the selected region
+data "google_compute_zones" "available" {
+  region = var.gcp_region
+}
+
 # GCP does not use filters to search for images, but you can either use the image name or the image family.
 # The image family is a way to group images, and when you use it, GCP will always return the latest non-deprecated image in that family.
 # In this case, we are using the "debian-11" family from the "debian-cloud" project, which will always return the latest Debian 11 image available.
@@ -13,7 +18,7 @@ data "google_compute_image" "debian_11" {
 resource "google_compute_instance" "web" {
   name         = "helloworld"
   machine_type = var.machine_type
-  zone         = "${var.gcp_region}-a"
+  zone         = data.google_compute_zones.available.names[0]  # Take the first available zone in the selected region
 
   # Define the storage (boot disk) configuration
   boot_disk {
