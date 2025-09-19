@@ -1,10 +1,10 @@
 # GCP does not use filters to search for images, but you can either use the image name or the image family.
 # The image family is a way to group images, and when you use it, GCP will always return the latest non-deprecated image in that family.
-# In this case, we are using the "tomcat" family from the "bitnami-launchpad" project, which will always return the latest Tomcat image available.
+# In this case, we are using the "debian-11" family from the "debian-cloud" project, which will always return the latest Debian 11 image available.
 # This is equivalent to using filters in AWS to always get the latest version of an AMI.
-data "google_compute_image" "bitnami_tomcat" {
-  family  = "tomcat"
-  project = "bitnami-launchpad"
+data "google_compute_image" "debian_11" {
+  family  = "debian-11" # in the AWS example we are deploying a Bitnami Tomcat image, but for simplicity we are using a common Debian image here
+  project = "debian-cloud"
 }
 
 # GCP follows a different approach compared to AWS, since it requires to be explicit 
@@ -18,7 +18,7 @@ resource "google_compute_instance" "web" {
   # Define the storage (boot disk) configuration
   boot_disk {
     initialize_params {
-      image = data.google_compute_image.bitnami_tomcat.self_link
+      image = data.google_compute_image.debian_11.self_link
     }
   }
 
