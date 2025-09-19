@@ -17,6 +17,7 @@ resource "google_compute_instance" "web" {
 
   # Define the storage (boot disk) configuration
   boot_disk {
+    auto_delete = true # Delete the disk when the VM instance is deleted
     initialize_params {
       image = data.google_compute_image.debian_11.self_link
     }
@@ -26,7 +27,7 @@ resource "google_compute_instance" "web" {
   network_interface {
     network = "default"
     access_config {
-      # Ephemeral external IP
+      # Ephemeral external IP; this avoids the need to create a static IP address that costs money.
     }
   }
 
