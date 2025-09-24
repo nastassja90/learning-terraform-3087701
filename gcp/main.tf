@@ -48,6 +48,16 @@ resource "google_compute_instance" "web" {
     }
   }
 
+  # Startup script to install and start Nginx web server on boot
+  metadata_startup_script = <<-EOF
+    #!/bin/bash
+    apt update
+    apt install -y nginx
+    systemctl start nginx
+    systemctl enable nginx
+    echo "<h1>Hello from GCP!</h1>" > /var/www/html/index.html
+  EOF
+
   # Apply the network tag to associate with firewall rules, so that the instance is affected by the firewall rules created in the module
   tags = [module.web_firewall.target_tag]
 
