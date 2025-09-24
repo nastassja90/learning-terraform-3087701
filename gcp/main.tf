@@ -22,11 +22,6 @@ module "web_firewall" {
   target_tag    = "web-server"
   allowed_ingress_cidr_blocks = ["0.0.0.0/0"]
   allowed_egress_cidr_blocks  = ["0.0.0.0/0"]
-  
-  labels = {
-    name      = "web-firewall"
-    terraform = "true"
-  }
 }
 
 # GCP follows a different approach compared to AWS, since it requires to be explicit 
