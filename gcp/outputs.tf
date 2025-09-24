@@ -13,8 +13,8 @@ output "instance_self_link" {
  value = google_compute_instance.web.self_link
 }
 
-# Output the external IP address of the instance once it is created on GCP, so that you can use it to access the instance via SSH or HTTP.
-output "instance_external_ip" {
-  description = "External IP address of the instance"
-  value       = google_compute_instance.web.network_interface[0].access_config[0].nat_ip
+# Output the public URL to access the web server once the instance is created and the startup script has run.
+output "instance_public_url" {
+  description = "URL to access the web server"
+  value       = "http://${google_compute_instance.web.network_interface[0].access_config[0].nat_ip}"
 }
