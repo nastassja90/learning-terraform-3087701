@@ -12,6 +12,23 @@ data "google_compute_image" "debian_11" {
   project = "debian-cloud"
 }
 
+# Import the firewall module
+module "web_firewall" {
+  source = "./modules/firewall"
+  
+  firewall_name = "web"
+  network_name  = "default"
+  # The target tag is used to associate the firewall rules with the instances that have the same tag
+  target_tag    = "web-server"
+  allowed_ingress_cidr_blocks = ["0.0.0.0/0"]
+  allowed_egress_cidr_blocks  = ["0.0.0.0/0"]
+  
+  labels = {
+    name      = "web-firewall"
+    terraform = "true"
+  }
+}
+
 # GCP follows a different approach compared to AWS, since it requires to be explicit 
 # about the boot disk and networking configurations. When creating a new EC2 instance on AWS, you can skip networking, storage and IP configurations, since
 # AWS will create them with default values. However, on GCP we need to always define all these low-level details explicitly.
@@ -35,6 +52,9 @@ resource "google_compute_instance" "web" {
       # Ephemeral external IP; this avoids the need to create a static IP address that costs money.
     }
   }
+
+  # Apply the network tag to associate with firewall rules, so that the instance is affected by the firewall rules created in the module
+  tags = [module.web_firewall.target_tag]
 
   labels = {
     name = "helloworld"
