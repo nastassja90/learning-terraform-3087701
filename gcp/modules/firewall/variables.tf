@@ -27,11 +27,3 @@ variable "allowed_egress_cidr_blocks" {
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
-
-variable "labels" {
-  description = "Labels to apply to the firewall rules"
-  type        = map(string)
-  default = {
-    terraform = "true"
-  }
-}
