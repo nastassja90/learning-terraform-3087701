@@ -10,6 +10,12 @@ variable "network_name" {
   default     = "default"
 }
 
+variable "network_self_link" {
+  description = "Self link of the VPC network where firewall rules will be applied"
+  type        = string
+  default     = null
+}
+
 variable "target_tag" {
   description = "Network tag to apply firewall rules to instances"
   type        = string
@@ -23,7 +29,7 @@ variable "allowed_ingress_cidr_blocks" {
 }
 
 variable "allowed_egress_cidr_blocks" {
-  description = "List of CIDR blocks allowed to be accessed by the resources"
+  description = "List of CIDR blocks allowed for egress traffic"
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
