@@ -18,7 +18,12 @@ resource "google_compute_router_nat" "vpc_nat" {
   router                             = google_compute_router.vpc_router.name
   region                             = var.gcp_region
   nat_ip_allocate_option            = "AUTO_ONLY"
-  source_subnet_ip_ranges_to_nat    = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+  
+  # Possible values: 
+  # -- ALL_SUBNETWORKS_ALL_IP_RANGES: NAT for all subnets and all IP ranges (primary and secondary)
+  # -- ALL_SUBNETWORKS_PRIMARY_IP_RANGES: NAT for all subnets but only primary IP ranges
+  # -- LIST_OF_SUBNETWORKS: NAT only for specific subnets (it depends on subnetwork_names parameter)
+  source_subnetwork_ip_ranges_to_nat    = "ALL_SUBNETWORKS_ALL_IP_RANGES"
   
   # Logging per compliance GDPR/HIPAA
   log_config {
