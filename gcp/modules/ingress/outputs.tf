@@ -7,5 +7,5 @@ output "load_balancer_ip" {
 # Output the SSL certificate status
 output "ssl_certificate_status" {
   description = "Status of the managed SSL certificate - It may take several minutes to provision after DNS is configured"
-  value       = google_compute_managed_ssl_certificate.lb_cert.managed[0].status
+  value       = google_compute_managed_ssl_certificate.lb_cert.managed
 }
