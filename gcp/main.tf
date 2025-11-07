@@ -67,7 +67,32 @@ module "web_firewall" {
   network_self_link  = module.vpc.network_self_link
   target_tag    = "web-firewall-compliant"
   # Configure CIDR blocks allowed to access the web server
-  allowed_ingress_cidr_blocks = ["0.0.0.0/0"]
+  # Since we use a LB to manage ingress traffic,
+  # we need to allow a specific set of GCP IPs, because the LB is managed by GCP and uses these IP ranges to forward traffic to the backend VMs.
+  allowed_ingress_cidr_blocks = ["35.191.0.0/16", "130.211.0.0/22"]
+}
+
+# Import the custom VM/nginx module to create N VM instances running an Nginx web server
+module "vm_nginx" {
+  source = "./modules/vm/nginx"
+  count = 1 # create a single instance
+
+  name             = "helloworld-${count.index + 1}"
+  machine_type     = var.machine_type
+  gcp_region       = var.gcp_region
+  # Distribute instances across available zones for high availability. This operation uses the modulo operator to cycle through the list of available zones
+  # and assign each instance to a different zone in round-robin fashion.
+  gcp_zone         = data.google_compute_zones.available.names[count.index % length(data.google_compute_zones.available.names)]
+
+  boot_disk_image  = data.google_compute_image.debian_11.self_link
+  network_name     = module.vpc.network_name
+  subnet_name      = module.vpc.subnets_names[0]
+  tags             = [
+    # Apply the network tag to associate with the vpc module
+    "egress-inet", 
+    # Apply the web_firewall tag to associate with the firewall rules created in the web_firewall module
+    module.web_firewall.target_tag
+  ]
 }
 
 # Import the custom egress module to create Cloud NAT for controlled outbound traffic
@@ -80,70 +105,22 @@ module "egress" {
   network_id   = module.vpc.network_id
 }
 
-# GCP follows a different approach compared to AWS, since it requires to be explicit 
-# about the boot disk and networking configurations. When creating a new EC2 instance on AWS, you can skip networking, storage and IP configurations, since
-# AWS will create them with default values. However, on GCP we need to always define all these low-level details explicitly.
-resource "google_compute_instance" "web" {
-  name         = "helloworld"
-  machine_type = var.machine_type
-  zone         = data.google_compute_zones.available.names[0]  # Take the first available zone in the selected region
+# Import the custom ingress module to create a Load Balancer in front of the web server
+module "ingress" {
+  source = "./modules/ingress"
 
-  # Define the storage (boot disk) configuration
-  boot_disk {
-    auto_delete = true # Delete the disk when the VM instance is deleted
-    initialize_params {
-      image = data.google_compute_image.debian_11.self_link
-    }
-  }
-
-  # Define the networking configuration
-  network_interface {
-    network    = module.vpc.network_name        # use the test-vpc network"
-    subnetwork = module.vpc.subnets_names[0]    # use the first subnet created in the vpc module
-  }
-
-  # Enable Shielded VM for better security (GDPR/HIPAA requirement)
-  # This is an advanced security feature provided by GCP to protect VM from rootkits and bootkits and other malware.
-  shielded_instance_config {
-    # Enable Secure Boot to ensure only trusted code is executed during the boot process
-    enable_secure_boot          = true
-    # Enable the TSM (Trusted Platform Module) to securely store cryptographic keys
-    enable_vtpm                = true
-    # Enable Integrity Monitoring to detect and report any changes to the VM's boot integrity
-    enable_integrity_monitoring = true
-  }
-
-  # Disable the default display device to reduce the attack surface
-  # (not strictly required for GDPR/HIPAA, but a good security practice)
-  enable_display = false
-
-  metadata = {
-    # Enable OS Login for better security (GDPR/HIPAA requirement). This allows to manage SSH access 
-    # using IAM roles instead of managing SSH keys manually. It also provides better auditing and logging capabilities.
-    enable-oslogin = "TRUE"
-    # Block project-wide SSH keys to enforce OS Login usage; each user must use their own IAM role to access the VM via SSH
-    # it is not possible to use project-wide SSH keys anymore.
-    block-project-ssh-keys = "TRUE"
-  }
-
-  # Startup script to install and start Nginx web server on boot
-  metadata_startup_script = <<-EOF
-    #!/bin/bash
-    apt update
-    apt install -y nginx
-    systemctl start nginx
-    systemctl enable nginx
-    echo "<h1>Hello from GCP!</h1>" > /var/www/html/index.html
-  EOF
-
-  tags = [
-    # Apply the network tag to associate with the vpc module
-    "egress-inet", 
-    # Apply the web_firewall tag to associate with the firewall rules created in the web_firewall module
-    module.web_firewall.target_tag
-  ]
-
-  labels = {
-    name = "helloworld"
+  network_name      = module.vpc.network_name
+  network_self_link = module.vpc.network_self_link
+  gcp_region        = var.gcp_region
+  gcp_zone          = data.google_compute_zones.available.names[0]  # Use the first available zone in the selected region
+  instances         = [
+    for vm in module.vm_nginx : vm.instance_self_link
+  ]  # Add the VM instances
+  domains           = ["api.test.novahumana.io"]
+  # Configure the health check for the backend service
+  health_check_config = {
+    port         = 80
+    request_path = "/"
+    protocol     = "HTTP"
   }
 }
