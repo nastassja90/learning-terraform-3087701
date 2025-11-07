@@ -99,6 +99,30 @@ resource "google_compute_firewall" "web_deny_ingress" {
   description = "GDPR/HIPAA: Deny all ingress traffic with logging"
 }
 
+# Create firewall rules to allow health checks from Google Cloud Load Balancer
+# Health check traffic comes from specific IP ranges that need to be allowed
+resource "google_compute_firewall" "allow_health_check" {
+  name    = "allow-health-check"
+  network = local.network
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80"]
+  }
+
+  # Google Cloud Load Balancer health check IP ranges
+  source_ranges = var.allowed_ingress_cidr_blocks
+
+  # Apply the rule to instances with the specified target tag
+  target_tags = [var.target_tag]
+
+  description = "Allow health check traffic from Google Cloud Load Balancer"
+
+  log_config {
+    metadata = "INCLUDE_ALL_METADATA"
+  }
+}
+
 ##################################################################
 # Egress configuration for GDPR/HIPAA compliance                 #
 ##################################################################
