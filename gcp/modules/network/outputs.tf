@@ -25,12 +25,12 @@ output "subnets_names" {
 # Output applied firewall rules
 output "firewall_rules" {
   description = "List of firewall rules applied in the VPC"
-  value       = object({
+  value       = {
     rules = module.web_firewall.firewall_rules
     allowed_ingress_cidrs = module.web_firewall.allowed_ingress_cidr_blocks
     allowed_egress_cidrs  = module.web_firewall.allowed_egress_cidr_blocks
     effective_egress_ports = module.web_firewall.effective_egress_ports
-  })
+  }
 }
 
 # Output the Load Balancer IP address - this is the IP you need to configure in your DNS A record
