@@ -50,7 +50,9 @@ module "network" {
       name                   = "egress-internet"
       description            = "route through IGW to access internet"
       destination_range      = "0.0.0.0/0"
-      tags                   = [local.tags.vpc_egress]
+      # Specify tags to associate this route with specific VM instances. 
+      # If you need multiple tags, provide them as a comma-separated list (e.g. "tag1,tag2").
+      tags                   = local.tags.vpc_egress 
       # the next hop to this route will be the default internet gateway
       next_hop_internet      = "true"
       priority               = 1000

@@ -68,7 +68,7 @@ variable "vpc" {
             name              = string
             description       = string
             destination_range = string
-            tags              = list(string)
+            tags              = string
             next_hop_internet = string
             priority          = number
         }))
