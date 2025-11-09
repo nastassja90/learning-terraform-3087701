@@ -25,9 +25,9 @@ module "vpc" {
             subnet_flow_logs_interval  = "INTERVAL_5_SEC"       # sets the aggregation interval for collecting flow logs (default: 5 seconds)
             subnet_flow_logs_sampling  = 1.0                    # 100% sampling set the sampling rate of VPC flow logs within the subnetwork
             subnet_flow_logs_metadata  = "INCLUDE_ALL_METADATA" # configures whether metadata fields should be added to the reported VPC flow logs
-        },
+        }
     ]
-    
+
     routes = var.vpc.routes
 }
 
