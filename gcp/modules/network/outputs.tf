@@ -27,8 +27,8 @@ output "firewall_rules" {
   description = "List of firewall rules applied in the VPC"
   value       = {
     rules = module.web_firewall.firewall_rules
-    allowed_ingress_cidrs = module.web_firewall.allowed_ingress_cidr_blocks
-    allowed_egress_cidrs  = module.web_firewall.allowed_egress_cidr_blocks
+    allowed_ingress_cidrs = module.web_firewall.allowed_ingress_cidrs
+    allowed_egress_cidrs  = module.web_firewall.allowed_egress_cidrs
     effective_egress_ports = module.web_firewall.effective_egress_ports
   }
 }
